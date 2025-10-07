@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>What Type of Leader Are You? — Quiz</title>
-  <meta name="description" content="Discover your leadership style with this quick, research‑informed quiz. Hostable on Vercel as a static single file." />
+  <meta name="description" content="Discover your leadership style with this quick, research‑informed quiz." />
   <link rel="preconnect" href="https://unpkg.com" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
@@ -315,12 +315,10 @@
 
               <div className="no-print flex flex-wrap gap-3">
                 <button onClick={resetQuiz} className="inline-flex items-center justify-center rounded-xl px-4 py-2 border border-slate-300 text-slate-800 hover:bg-slate-50">Retake</button>
-                <button onClick={() => window.print()} className="inline-flex items-center justify-center rounded-xl px-4 py-2 bg-primary-600 text-white hover:bg-primary-700">Print / Save PDF</button>
-                <button onClick={() => navigator.clipboard.writeText(window.location.href)} className="inline-flex items-center justify-center rounded-xl px-4 py-2 border border-slate-300 text-slate-800 hover:bg-slate-50">Copy sharable link</button>
-              </div>
+                  </div>
 
               <footer className="text-xs text-slate-500">
-                © {new Date().getFullYear()} • Original quiz content in this project. Inspired by widely used leadership style frameworks.
+                © {new Date().getFullYear()} 
               </footer>
             </section>
           )}
