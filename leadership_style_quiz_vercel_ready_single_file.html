@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>What Type of Leader Are You? — Quiz</title>
+  <meta name="description" content="Discover your leadership style with this quick, research‑informed quiz. Hostable on Vercel as a static single file." />
+  <link rel="preconnect" href="https://unpkg.com" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: {
+              50: '#f0f7ff', 100: '#dbeeff', 200: '#bfe0ff', 300: '#93c8ff', 400: '#5aa6ff', 500: '#2d86ff', 600: '#166ef2', 700: '#145bd4', 800: '#144aaa', 900: '#143f8a'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%23166ef2'/%3E%3Cpath d='M20 38l6-18h4l6 18h-4l-1.3-4h-5.4L24.6 38H20zm7.3-7h3.4L29 25.4 27.3 31z' fill='white'/%3E%3C/svg%3E"/>
+  <!-- React via CDN + Babel for JSX without a build step -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    /* Print-friendly */
+    @media print { .no-print { display: none !important; } body { background: #fff; } }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-900 antialiased">
+  <div id="root" class="max-w-4xl mx-auto p-6"></div>
+
+  <script type="text/babel">
+    const { useState, useMemo, useEffect } = React;
+
+    // ---- Data ----
+    const STYLES = {
+      democratic: {
+        name: 'Participative (Democratic)',
+        blurb: 'You invite input, build consensus, and make shared decisions. Great for engagement and quality — slower under tight deadlines.'
+      },
+      autocratic: {
+        name: 'Directive (Autocratic)',
+        blurb: 'You decide quickly, set the course, and own accountability. Useful in crises — risks buy‑in and creativity if overused.'
+      },
+      laissez: {
+        name: 'Delegative (Laissez‑faire)',
+        blurb: 'You empower experts with autonomy and minimal interference. Strong with high skill/maturity teams — can feel hands‑off to others.'
+      },
+      transformational: {
+        name: 'Transformational (Vision‑led)',
+        blurb: 'You energize with purpose, elevate standards, and coach growth. Inspiring for change — needs follow‑through on execution.'
+      }
+    };
+
+    // 12 original questions with 4 options each mapped to a style key
+    const QUESTIONS = [
+      {
+        q: 'A critical deadline just moved up by a week. What’s your first move?',
+        options: [
+          { t: 'Gather the team, surface risks, co‑plan the path.', k: 'democratic' },
+          { t: 'Assign tasks decisively and set non‑negotiable checkpoints.', k: 'autocratic' },
+          { t: 'Let people self‑organize, offer support if they ask.', k: 'laissez' },
+          { t: 'Reframe the urgency around mission and rally everyone.', k: 'transformational' }
+        ]
+      },
+      {
+        q: 'A newcomer joins your project mid‑stream.',
+        options: [
+          { t: 'Run a quick roundtable so the team shares context together.', k: 'democratic' },
+          { t: 'Give a concise brief and exact next steps yourself.', k: 'autocratic' },
+          { t: 'Pair them with a teammate and let them figure it out.', k: 'laissez' },
+          { t: 'Explain the “why” and how their strengths fit the vision.', k: 'transformational' }
+        ]
+      },
+      {
+        q: 'Two senior contributors disagree on an approach.',
+        options: [
+          { t: 'Facilitate a structured decision with pros/cons and vote.', k: 'democratic' },
+          { t: 'Choose the direction yourself to keep momentum.', k: 'autocratic' },
+          { t: 'Encourage them to resolve it privately and report back.', k: 'laissez' },
+          { t: 'Align them on the overarching goal to unblock.', k: 'transformational' }
+        ]
+      },
+      {
+        q: 'Your team is capable but low‑energy lately.',
+        options: [
+          { t: 'Co‑create norms and improvements they’re excited about.', k: 'democratic' },
+          { t: 'Reset expectations and hold strict accountability.', k: 'autocratic' },
+          { t: 'Give them slack — energy returns with space.', k: 'laissez' },
+          { t: 'Reignite purpose with customer impact stories.', k: 'transformational' }
+        ]
+      },
+      {
+        q: 'A decision is risky and reversible.',
+        options: [
+          { t: 'Run a quick poll and decide with the group.', k: 'democratic' },
+          { t: 'Make the call immediately — speed over consensus.', k: 'autocratic' },
+          { t: 'Let the closest owner just run with it.', k: 'laissez' },
+          { t: 'Pilot the bold path that best advances the vision.', k: 'transformational' }
+        ]
+      },
+      {
+        q: 'You inherit a highly skilled, self‑managing team.',
+        options: [
+          { t: 'Invite them to shape goals and metrics collaboratively.', k: 'democratic' },
+          { t: 'Set a crisp roadmap and performance bar right away.', k: 'autocratic' },
+          { t: 'Protect their autonomy; remove blockers when asked.', k: 'laissez' },
+          { t: 'Paint a compelling future and coach stretch growth.', k: 'transformational' }
+        ]
+      },
+      {
+        q: 'A crisis hits and decisions must be made in minutes.',
+        options: [
+          { t: 'Get two fast perspectives, then decide together.', k: 'democratic' },
+          { t: 'Command decisions unilaterally; communicate clearly.', k: 'autocratic' },
+          { t: 'Let domain experts act without oversight.', k: 'laissez' },
+          { t: 'Keep people calm by anchoring to purpose and priorities.', k: 'transformational' }
+        ]
+      },
+      {
+        q: 'Feedback reveals people feel unheard.',
+        options: [
+          { t: 'Start regular forums and rotate facilitation.', k: 'democratic' },
+          { t: 'Schedule 1:1s and set expectations on speaking up.', k: 'autocratic' },
+          { t: 'Open a channel and let them bring topics as needed.', k: 'laissez' },
+          { t: 'Share the vision and invite stories tied to it.', k: 'transformational' }
+        ]
+      },
+      {
+        q: 'A stretch goal requires behavior change across the team.',
+        options: [
+          { t: 'Co‑design the approach; make commitments visible.', k: 'democratic' },
+          { t: 'Mandate the new norm and inspect the change.', k: 'autocratic' },
+          { t: 'Let champions emerge organically.', k: 'laissez' },
+          { t: 'Model the change and celebrate progress publicly.', k: 'transformational' }
+        ]
+      },
+      {
+        q: 'An experienced IC proposes a novel idea.',
+        options: [
+          { t: 'Host a quick design review with peers.', k: 'democratic' },
+          { t: 'Green‑light it but set strict guardrails.', k: 'autocratic' },
+          { t: 'Tell them to run it and report back later.', k: 'laissez' },
+          { t: 'Connect the idea to bigger strategic bets.', k: 'transformational' }
+        ]
+      },
+      {
+        q: 'Your calendar is jammed with decisions only you can make.',
+        options: [
+          { t: 'Create decision templates the group can use.', k: 'democratic' },
+          { t: 'Centralize key calls to weekly office hours.', k: 'autocratic' },
+          { t: 'Delegate authority to owners by default.', k: 'laissez' },
+          { t: 'Develop leaders who can judge by principles.', k: 'transformational' }
+        ]
+      },
+      {
+        q: 'What do you most want people to say about you as a leader?',
+        options: [
+          { t: '“They included my voice and built community.”', k: 'democratic' },
+          { t: '“They were decisive and we shipped.”', k: 'autocratic' },
+          { t: '“They trusted me to do my best work.”', k: 'laissez' },
+          { t: '“They inspired me to grow and aim higher.”', k: 'transformational' }
+        ]
+      }
+    ];
+
+    function useQueryState(key, initial) {
+      const [value, setValue] = useState(() => {
+        const url = new URL(window.location);
+        const raw = url.searchParams.get(key);
+        if (!raw) return initial;
+        try { return JSON.parse(decodeURIComponent(raw)); } catch (e) { return initial; }
+      });
+      useEffect(() => {
+        const url = new URL(window.location);
+        url.searchParams.set(key, encodeURIComponent(JSON.stringify(value)));
+        window.history.replaceState({}, '', url);
+      }, [key, value]);
+      return [value, setValue];
+    }
+
+    function Progress({ current, total }) {
+      const pct = Math.round(((current) / total) * 100);
+      return (
+        <div className="w-full">
+          <div className="flex justify-between text-sm text-slate-600 mb-1">
+            <span>Question {current} of {total}</span>
+            <span>{pct}%</span>
+          </div>
+          <div className="h-2 w-full bg-slate-200 rounded-full overflow-hidden">
+            <div className="h-2 bg-primary-600" style={{width: pct + '%'}} />
+          </div>
+        </div>
+      );
+    }
+
+    function App() {
+      const total = QUESTIONS.length;
+      const [step, setStep] = useQueryState('step', 0); // 0 = intro, 1..N = questions, N+1 = results
+      const [answers, setAnswers] = useQueryState('a', Array(total).fill(null));
+
+      const currentIndex = step - 1; // question index
+
+      const canNext = step === 0 || (answers[currentIndex] !== null);
+
+      const scores = useMemo(() => {
+        const s = { democratic: 0, autocratic: 0, laissez: 0, transformational: 0 };
+        answers.forEach((choice, i) => {
+          if (choice === null) return;
+          const key = QUESTIONS[i].options[choice].k;
+          s[key] += 1;
+        });
+        return s;
+      }, [answers]);
+
+      const result = useMemo(() => {
+        const entries = Object.entries(scores);
+        const totalAnswered = answers.filter(a => a !== null).length || 1;
+        const withPct = entries.map(([k, v]) => ({ key: k, value: v, pct: Math.round((v/totalAnswered)*100) }))
+                                .sort((a,b) => b.value - a.value);
+        const top = withPct.filter(x => x.value === withPct[0].value);
+        return { breakdown: withPct, top };
+      }, [scores, answers]);
+
+      function startQuiz() { setStep(1); }
+      function selectOption(idx) {
+        const next = [...answers];
+        next[currentIndex] = idx;
+        setAnswers(next);
+      }
+      function nextStep() {
+        if (step < total) setStep(step + 1);
+        else setStep(total + 1);
+      }
+      function prevStep() { if (step > 1) setStep(step - 1); }
+      function resetQuiz() { setAnswers(Array(total).fill(null)); setStep(0); }
+
+      return (
+        <main className="bg-white shadow-sm ring-1 ring-slate-200 rounded-2xl p-6 md:p-8">
+          <header className="mb-6">
+            <h1 className="text-2xl md:text-3xl font-semibold tracking-tight">What Type of Leader Are You?</h1>
+            <p className="text-slate-600 mt-2">A quick, research‑informed self‑reflection. Original items inspired by common leadership frameworks. Not affiliated with any third party.</p>
+          </header>
+
+          {step === 0 && (
+            <section className="space-y-4">
+              <ul className="list-disc pl-5 text-slate-700">
+                <li><strong>12 questions</strong>, one best‑fit answer each</li>
+                <li><strong>4 styles</strong>: Participative, Directive, Delegative, Transformational</li>
+                <li>Get a <strong>style breakdown</strong> and tips at the end</li>
+              </ul>
+              <button onClick={startQuiz} className="no-print inline-flex items-center justify-center rounded-xl px-5 py-3 bg-primary-600 text-white font-medium hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-400">Start the quiz</button>
+            </section>
+          )}
+
+          {step > 0 && step <= total && (
+            <section>
+              <div className="mb-6">
+                <Progress current={step} total={total} />
+              </div>
+              <div className="space-y-5">
+                <h2 className="text-xl font-semibold">{QUESTIONS[currentIndex].q}</h2>
+                <form className="grid gap-3" onSubmit={(e)=>e.preventDefault()}>
+                  {QUESTIONS[currentIndex].options.map((opt, i) => {
+                    const id = `q${currentIndex}_o${i}`;
+                    const selected = answers[currentIndex] === i;
+                    return (
+                      <label key={id} htmlFor={id} className={`border rounded-xl px-4 py-3 cursor-pointer transition ${selected ? 'border-primary-600 bg-primary-50' : 'border-slate-200 hover:border-primary-300'}`}>
+                        <div className="flex items-start gap-3">
+                          <input id={id} type="radio" name={`q${currentIndex}`} className="mt-1 w-4 h-4" checked={selected} onChange={() => selectOption(i)} />
+                          <span className="text-slate-800">{opt.t}</span>
+                        </div>
+                      </label>
+                    );
+                  })}
+                </form>
+              </div>
+
+              <div className="mt-6 flex items-center justify-between gap-3">
+                <button onClick={prevStep} disabled={step===1} className={`no-print inline-flex items-center justify-center rounded-xl px-4 py-2 border font-medium ${step===1 ? 'opacity-40 cursor-not-allowed border-slate-200 text-slate-400' : 'border-slate-300 text-slate-700 hover:bg-slate-50'}`}>Back</button>
+                <button onClick={nextStep} disabled={!canNext} className={`no-print inline-flex items-center justify-center rounded-xl px-4 py-2 font-medium ${!canNext ? 'bg-slate-200 text-slate-500 cursor-not-allowed' : 'bg-primary-600 text-white hover:bg-primary-700'}`}>{step < total ? 'Next' : 'See results'}</button>
+              </div>
+            </section>
+          )}
+
+          {step === total + 1 && (
+            <section className="space-y-6">
+              <div className="mb-4"><Progress current={total} total={total} /></div>
+              <h2 className="text-xl font-semibold">Your Leadership Style</h2>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                {result.breakdown.map(({key, value, pct}) => (
+                  <div key={key} className="rounded-xl border border-slate-200 p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="font-semibold">{STYLES[key].name}</div>
+                        <div className="text-sm text-slate-600">{value} / {answers.filter(a=>a!==null).length} ({pct}%)</div>
+                      </div>
+                      <div className="text-primary-700 text-lg font-semibold">{pct}%</div>
+                    </div>
+                    <p className="mt-2 text-slate-700">{STYLES[key].blurb}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="rounded-xl bg-slate-50 border border-slate-200 p-4">
+                <div className="text-sm text-slate-600">Primary style</div>
+                <div className="text-lg font-semibold">{result.top.map(t => STYLES[t.key].name).join(' • ')}</div>
+                <p className="mt-1 text-slate-700">Remember: effective leaders flex their style to context. Use this as a reflection tool — not a label.</p>
+              </div>
+
+              <div className="no-print flex flex-wrap gap-3">
+                <button onClick={resetQuiz} className="inline-flex items-center justify-center rounded-xl px-4 py-2 border border-slate-300 text-slate-800 hover:bg-slate-50">Retake</button>
+                <button onClick={() => window.print()} className="inline-flex items-center justify-center rounded-xl px-4 py-2 bg-primary-600 text-white hover:bg-primary-700">Print / Save PDF</button>
+                <button onClick={() => navigator.clipboard.writeText(window.location.href)} className="inline-flex items-center justify-center rounded-xl px-4 py-2 border border-slate-300 text-slate-800 hover:bg-slate-50">Copy sharable link</button>
+              </div>
+
+              <footer className="text-xs text-slate-500">
+                © {new Date().getFullYear()} • Original quiz content in this project. Inspired by widely used leadership style frameworks.
+              </footer>
+            </section>
+          )}
+        </main>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
